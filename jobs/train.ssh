@@ -1,0 +1,20 @@
+#!/bin/bash
+#SBATCH --partition=rtx4090
+#SBATCH --time=12:00:00
+#SBATCH --job-name=train_diffusion 
+#SBATCH --output=train-id-%J.out 
+#SBATCH --mail-user=pardot@post.bgu.ac.il 
+#SBATCH --mail-type=BEGIN,END,FAIL 
+#SBATCH --gpus=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=32G
+
+# Activate conda environment
+source /storage/modules/packages/anaconda/etc/profile.d/conda.sh
+conda activate channel-diffusion
+
+# Navigate to project directory
+cd /home/pardot/channel-diffusion
+
+# Run the diffusion training
+python main_OFDM.py --dataset deepmimo --dataset_file_name 32ant_64car_300k --num_car 64 --ant_shape 32 1 1 --model_car Linear --model_ant Linear --task train --bs 256 --exp_name diffusion_training --prediction_type sample --num_train_timesteps 1000 --num_epochs 50 --save_model_epochs 10 --pilot_spacing 10

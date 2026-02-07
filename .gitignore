@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+
+# Model checkpoints and experiments
+checkpoints/
+logs/
+
+# SLURM job output
+*.out
+
+# Data and datasets (keep dataset/ folder but ignore large files)
+dataset/*.mat
+O1_3p5/
+*.npy
+*.pt
+
+# Large files
+*.zip
+*.tar.gz

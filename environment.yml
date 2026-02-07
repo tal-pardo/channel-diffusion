@@ -1,0 +1,17 @@
+name: channel-diffusion
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+    - torch
+    - torchvision
+    - torchaudio
+    - accelerate
+    - diffusers
+    - tqdm
+    - numpy
+    - sympy
+    - DeepMIMO==2.0

@@ -1,5 +1,5 @@
 # Data generation file. Please visit https://www.deepmimo.net/ to download the dataset of 'O1_3p5' scenario and check how to use it.
-import DeepMIMO
+import DeepMIMO             # DeepMIMOv2 !
 import numpy as np
 
 param = DeepMIMO.default_params()
@@ -28,3 +28,4 @@ dataset = DeepMIMO.generate_data(param)
 print(dataset[0]['user']['channel'].shape)
 np.save('data.npy', dataset[0]['user']['channel'])
 np.save('loc.npy', dataset[0]['user']['location'])
+
