@@ -1,0 +1,274 @@
+{
+    "raw_data_dir": "../../Dataset",
+    "basic_file_name": "all",
+    "file_ids": [
+        55
+    ],
+    "max_num_path": 25,
+    "gain_offset": 70,
+    "gain_gate": -70,
+    "dataset_dir": "C:\\Users\\talpa\\Projects\\channel-diffusion\\dataset",
+    "dataset": "deepmimo",
+    "divided_dataset_dir": "divided",
+    "dataset_file_name": "32ant_64car_300k",
+    "ratio": [
+        0.8,
+        0.2
+    ],
+    "scenario": "stable",
+    "num_car": 64,
+    "sampling_freq": 20000000,
+    "freq": 3500000000.0,
+    "ant_shape": [
+        32,
+        1,
+        1
+    ],
+    "channel_independence": 1,
+    "num_layers": 5,
+    "car_first": 1,
+    "model_car": "Linear",
+    "model_ant": "Linear",
+    "flat_car": 2,
+    "flat_ant": 2,
+    "kernel_size_car": 15,
+    "kernel_size_ant": 15,
+    "down_sampling_method_car": "conv",
+    "down_sampling_layers_car": 5,
+    "down_sampling_window_car": 2,
+    "linear_gate_car": 512,
+    "enc_in_car": 10,
+    "down_sampling_method_ant": "conv",
+    "down_sampling_layers_ant": 5,
+    "down_sampling_window_ant": 2,
+    "linear_gate_ant": 64,
+    "enc_in_ant": 10,
+    "moving_avg_car": 25,
+    "top_k_car": 5,
+    "decomp_method_car": "moving_avg",
+    "moving_avg_ant": 25,
+    "top_k_ant": 5,
+    "decomp_method_ant": "moving_avg",
+    "bs":512,                               
+    "num_workers": 0,
+    "drop_last": false,
+    "exp_name": "diffusion_training",
+    "task": "train",
+    "lr": 0.001,
+    "step_size": 1,
+    "gamma_lr": 0.95,
+    "num_epochs": 50,
+    "save_model_epochs": 10,
+    "save_image_epochs": 5,
+    "mixed_precision": "no",
+    "gradient_accumulation_steps": 1,
+    "num_remaining_channels": 1,   
+    "substitute_channel": false,
+    "recovery_err_gate": 2.0,
+    "num_samples": 1,               
+    "num_train_timesteps": 1000,
+    "all_time_steps": 100,
+    "beta_start": 0.0001,
+    "beta_end": 0.02,
+    "beta_schedule": "linear",
+    "clip_sample": false,
+    "set_alpha_to_one": true,
+    "steps_offset": 0,
+    "prediction_type": "sample",
+    "thresholding": false,
+    "dynamic_thresholding_ratio": 0.995,
+    "clip_sample_range": 1.0,
+    "sample_max_value": 1.0,
+    "timestep_spacing": "leading",
+    "rescale_betas_zero_snr": false,
+    "embed_dim": 64,
+    "gamma": 0.3,
+    "eta1": 0.3,
+    "eta2": 0.1,
+    "eta3": 0.6,
+    "use_grad": false,
+    "pilot_spacing": 10,
+    "modulation": "QPSK",
+    "decoding": "hard",
+    "sp_unit_name": "naive",
+    "use_noise_as_init": true,
+    "noise_pow_dB": 0.0,
+    "noise_NMSE": true,
+    "use_gpu": true,
+    "num_ant": 32,
+    "BS_ant": [
+        [
+            -15.5,
+            0.0,
+            0.0
+        ],
+        [
+            -14.5,
+            0.0,
+            0.0
+        ],
+        [
+            -13.5,
+            0.0,
+            0.0
+        ],
+        [
+            -12.5,
+            0.0,
+            0.0
+        ],
+        [
+            -11.5,
+            0.0,
+            0.0
+        ],
+        [
+            -10.5,
+            0.0,
+            0.0
+        ],
+        [
+            -9.5,
+            0.0,
+            0.0
+        ],
+        [
+            -8.5,
+            0.0,
+            0.0
+        ],
+        [
+            -7.5,
+            0.0,
+            0.0
+        ],
+        [
+            -6.5,
+            0.0,
+            0.0
+        ],
+        [
+            -5.5,
+            0.0,
+            0.0
+        ],
+        [
+            -4.5,
+            0.0,
+            0.0
+        ],
+        [
+            -3.5,
+            0.0,
+            0.0
+        ],
+        [
+            -2.5,
+            0.0,
+            0.0
+        ],
+        [
+            -1.5,
+            0.0,
+            0.0
+        ],
+        [
+            -0.5,
+            0.0,
+            0.0
+        ],
+        [
+            0.5,
+            0.0,
+            0.0
+        ],
+        [
+            1.5,
+            0.0,
+            0.0
+        ],
+        [
+            2.5,
+            0.0,
+            0.0
+        ],
+        [
+            3.5,
+            0.0,
+            0.0
+        ],
+        [
+            4.5,
+            0.0,
+            0.0
+        ],
+        [
+            5.5,
+            0.0,
+            0.0
+        ],
+        [
+            6.5,
+            0.0,
+            0.0
+        ],
+        [
+            7.5,
+            0.0,
+            0.0
+        ],
+        [
+            8.5,
+            0.0,
+            0.0
+        ],
+        [
+            9.5,
+            0.0,
+            0.0
+        ],
+        [
+            10.5,
+            0.0,
+            0.0
+        ],
+        [
+            11.5,
+            0.0,
+            0.0
+        ],
+        [
+            12.5,
+            0.0,
+            0.0
+        ],
+        [
+            13.5,
+            0.0,
+            0.0
+        ],
+        [
+            14.5,
+            0.0,
+            0.0
+        ],
+        [
+            15.5,
+            0.0,
+            0.0
+        ]
+    ],
+    "in_car": 64,
+    "in_ant": 32,
+    "step_car": 1,
+    "step_ant": 1,
+    "pilot_cars": [
+        0,
+        10,
+        20,
+        30,
+        40,
+        50,
+        60
+    ]
+}

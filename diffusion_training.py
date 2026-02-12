@@ -27,8 +27,8 @@ def train_loop(config, model, noise_scheduler, optimizer, train_dataloader,
 
     # Now you train the model
     for epoch in range(config.num_epochs):
-        #progress_bar = tqdm(total=len(train_dataloader), disable=not accelerator.is_local_main_process)
-        #progress_bar.set_description(f"Epoch {epoch}")
+        progress_bar = tqdm(total=len(train_dataloader), disable=not accelerator.is_local_main_process)
+        progress_bar.set_description(f"Epoch {epoch}")
 
         for step, batch in enumerate(train_dataloader):
             clean_channels = data_preprocess(batch)
@@ -71,9 +71,9 @@ def train_loop(config, model, noise_scheduler, optimizer, train_dataloader,
                 optimizer.step()
                 optimizer.zero_grad()
 
-            #progress_bar.update(1)
+            progress_bar.update(1)
             logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0], "step": global_step}
-            #progress_bar.set_postfix(**logs)
+            progress_bar.set_postfix(**logs)
             accelerator.log(logs, step=global_step)
             global_step += 1
 

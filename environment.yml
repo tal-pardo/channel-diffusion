@@ -11,6 +11,7 @@ dependencies:
     - torchaudio
     - accelerate
     - diffusers
+    - tensorboard
     - tqdm
     - numpy
     - sympy

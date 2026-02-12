@@ -216,6 +216,36 @@ class MyDDIMScheduler(SchedulerMixin, ConfigMixin):
         # standard deviation of the initial noise distribution
         self.init_noise_sigma = 1.0
 
+    # ===== CODE MODIFIED BY USER: Added set_timesteps method for DDIM sampling =====
+    def set_timesteps(self, num_inference_steps: int, device):
+        """
+        Sets the discrete timesteps used for the diffusion chain (the reverse process).
+        
+        Args:
+            num_inference_steps (`int`):
+                The number of diffusion steps used when generating samples with a pre-trained model.
+            device (`torch.device`):
+                The device to place the timesteps on.
+        """
+        num_train_timesteps = self.config.num_train_timesteps
+        
+        # Generate timesteps based on spacing strategy
+        if self.config.timestep_spacing == "linspace":
+            timesteps = np.linspace(0, num_train_timesteps - 1, num_inference_steps, dtype=float)[::-1].copy().astype(np.int64)
+        elif self.config.timestep_spacing == "leading":
+            step_ratio = num_train_timesteps // num_inference_steps
+            timesteps = (np.arange(0, num_inference_steps) * step_ratio).astype(np.int64)[::-1].copy()
+        elif self.config.timestep_spacing == "trailing":
+            step_ratio = num_train_timesteps // num_inference_steps
+            timesteps = np.arange(num_train_timesteps - num_inference_steps * step_ratio, num_train_timesteps, step_ratio).astype(np.int64)
+        else:
+            raise ValueError(
+                f"timestep_spacing must be one of 'linspace', 'leading', or 'trailing', got {self.config.timestep_spacing}"
+            )
+        
+        self.timesteps = torch.from_numpy(timesteps).to(device)
+        self.num_inference_steps = num_inference_steps
+
     def scale_model_input(self, sample: torch.Tensor, timestep: Optional[int] = None) -> torch.Tensor:
         """
         Ensures interchangeability with schedulers that need to scale the denoising model input depending on the

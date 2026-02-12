@@ -31,24 +31,69 @@ def str_or_int(value):
 def get_config(name=None):
     if name is None:
         return get_config_from_input()
-    else:
-        with (open(os.path.join(name, 'config.json'), 'r') as f):
+    # If a single argument is given, treat as directory (legacy behavior)
+    if isinstance(name, str) and not name.endswith('.json'):
+        with open(os.path.join(name, 'config.json'), 'r') as f:
             configs = argparse.Namespace(**json.load(f))
-        with (open(os.path.join(name, 'config_car.json'), 'r') as f):
+        with open(os.path.join(name, 'config_car.json'), 'r') as f:
             configs_car = argparse.Namespace(**json.load(f))
-        with (open(os.path.join(name, 'config_ant.json'), 'r') as f):
+        with open(os.path.join(name, 'config_ant.json'), 'r') as f:
             configs_ant = argparse.Namespace(**json.load(f))
-        with (open(os.path.join(name, 'config_diff.json'), 'r') as f):
+        with open(os.path.join(name, 'config_diff.json'), 'r') as f:
             configs_diff = argparse.Namespace(**json.load(f))
-        with (open(os.path.join(name, 'config_noise.json'), 'r') as f):
+        with open(os.path.join(name, 'config_noise.json'), 'r') as f:
             configs_noise = argparse.Namespace(**json.load(f))
+    # If 5 arguments are given, treat as explicit file paths
+    elif isinstance(name, str) and name.endswith('.json'):
+        # If called with 5 explicit file paths, unpack them
+        import inspect
+        frame = inspect.currentframe().f_back
+        args, _, _, values = inspect.getargvalues(frame)
+        # name is the first argument, get the rest
+        config_files = [values[a] for a in args if a != 'self']
+        if len(config_files) != 5:
+            raise ValueError('Expected 5 config file paths for explicit config loading.')
+        with open(config_files[0], 'r') as f:
+            configs = argparse.Namespace(**json.load(f))
+        with open(config_files[1], 'r') as f:
+            configs_car = argparse.Namespace(**json.load(f))
+        with open(config_files[2], 'r') as f:
+            configs_ant = argparse.Namespace(**json.load(f))
+        with open(config_files[3], 'r') as f:
+            configs_diff = argparse.Namespace(**json.load(f))
+        with open(config_files[4], 'r') as f:
+            configs_noise = argparse.Namespace(**json.load(f))
+    else:
+        raise ValueError('get_config expects either a directory or 5 config file paths.')
 
-        configs.BS_ant = torch.tensor(configs.BS_ant)
-        if torch.cuda.is_available():
-            configs.BS_ant = configs.BS_ant.cuda()
+    configs.BS_ant = torch.tensor(configs.BS_ant)
+    if torch.cuda.is_available():
+        configs.BS_ant = configs.BS_ant.cuda()
 
-        return configs, configs_car, configs_ant, configs_diff, configs_noise
+    return configs, configs_car, configs_ant, configs_diff, configs_noise
 
+### added this function for pnp_sampling ###
+def get_config_pnp(config_main, config_car, config_ant, config_diff, config_noise):
+    """
+    Load five explicit config file paths for PnP use.
+    Returns: configs, configs_car, configs_ant, configs_diff, configs_noise
+    """
+    with open(config_main, 'r') as f:
+        configs = argparse.Namespace(**json.load(f))
+    with open(config_car, 'r') as f:
+        configs_car = argparse.Namespace(**json.load(f))
+    with open(config_ant, 'r') as f:
+        configs_ant = argparse.Namespace(**json.load(f))
+    with open(config_diff, 'r') as f:
+        configs_diff = argparse.Namespace(**json.load(f))
+    with open(config_noise, 'r') as f:
+        configs_noise = argparse.Namespace(**json.load(f))
+
+    configs.BS_ant = torch.tensor(configs.BS_ant)
+    if torch.cuda.is_available():
+        configs.BS_ant = configs.BS_ant.cuda()
+
+    return configs, configs_car, configs_ant, configs_diff, configs_noise
 
 def get_config_from_input():
     parser = argparse.ArgumentParser(description='LargeMLPMixer')

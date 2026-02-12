@@ -1,0 +1,46 @@
+Input: 𝑓_𝜃 (𝐻,𝑡)  , time_schedual  , 𝛾,𝑁_𝑔𝑒𝑛  , 𝜌 , 𝑌 , delta_t , lambda
+Initializations: estimate 𝜎 ̂_𝐻, 𝑡_0  , 𝛿 , rho
+While 𝑡>0:
+     𝑡_𝑛𝑒𝑥𝑡←𝑡−𝑟𝑜𝑢𝑛𝑑(𝑡_0/𝑁_𝑔𝑒𝑛 )
+     𝐻_(0|𝑡)←𝑓_𝜃 (𝐻_𝑡,𝑡)
+     𝐻_(0|𝑡)^′←𝐻_(0|𝑡)+1/𝜎 ̂_𝐻  𝜌(𝑌−𝜎 ̂_𝐻 𝐻_(0|𝑡) 𝑑𝑖𝑎𝑔(𝑥))𝑑𝑖𝑎𝑔(𝑥)^H
+     𝜖 ̃_𝑡←(𝐻_𝑡−√(𝛼bar_𝑡 ) 𝐻_(0|𝑡)^′ )/√(1−𝛼bar_𝑡 )
+     𝐻_(𝑡_𝑛𝑒𝑥𝑡 )←√(𝛼 ̅_(𝑡_𝑛𝑒𝑥𝑡 ) ) 𝐻_(0|𝑡)^′+√(1−𝛼 ̅_(𝑡_𝑛𝑒𝑥𝑡 ) ) 𝜔_𝑡 𝜖 ̃_𝑡
+     𝐻_(𝑡_𝑛𝑒𝑥𝑡 )←𝐻 ̅_(𝑡_𝑛𝑒𝑥𝑡 )/‖𝐻 ̅_(𝑡_𝑛𝑒𝑥𝑡 ) ‖_RMS
+
+Return 𝜎 ̂_𝐻 𝐻_(𝑡_𝑓𝑖𝑛𝑎𝑙 )
+
+initializations: 
+1) estimation of channel gain 𝜎 ̂_𝐻=‖𝑌_0 ‖_𝑓𝑟𝑜/√(𝑁_𝑎 𝑁_𝑐 ) 
+2) estimate initial time step from the average energy and diffusion scheduale: 
+   alpha_target = |P|/(Nc*avg_energy)
+   t_0 = argmin_t {alphabar_t<=alpha_target}
+   where |P| is the cardinallity of each subset of indices meanining 
+   |P| = nuber of pilots, P is a subset of indices where pilots are
+   Nc = number of carrirers
+   avg_energy = mean[1 + sigma^2_n / sigma^2_H]
+   sigma_n^2=noise_power*sigma_H^2 where noise_power depends on user configuration  
+3) set gamma and compute delta: 
+   delta = sqrt(1 - gamma^2)
+3) set initial channel according to columns:
+   h_i^(t_0) = gamma * (y_i / (sigma_H*x_i)) + delta * epsilon_i   for i in P
+   h_i^(t_0) = delta * epsilon_i                                   for i in D
+   where h_i is column in a particle, and epsiloni_i ~ CN(0,I)
+4) set rho: rho = 1 - (lambda*delta_t)/(1+lambda)
+5) time_sqedual is the computation os the alphas ans alphabars
+
+simulate recieved signal Y:
+1) buils x in shape 64x1
+   P=[0,4,8,...,60] 16 pilots in fixes intervals
+   D={rest of the indices in x}
+   x_i = 1 id i in P , random QPSK if i in D
+2) generate N in shape 32x64 as gaussian additive noise, with noise_power that defines tha variance of the noise
+3) simulate channel model: Y = H @ diag(x) + N
+
+hyperparameters: 
+- delta_t in [0, 1] controls the linear fusion between strict (GAP) and soft (HQS) data constraints
+  Start with a high value (close to 1) to let the Diffusion Prior lead early on, and decrease it toward 0 to enforce strict pilot consistency
+- lambda > 0: balances the regularization of the least-squares problem
+  typically set $\lambda$ based on the Signal-to-Noise Ratio (SNR) of your received signal
+- rho: allows the fused update to be interpreted as a preconditioned gradient descent step.
+- N_gen: number of diffusion steps used to calculate the step size, usually 100

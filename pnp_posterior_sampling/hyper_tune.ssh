@@ -1,0 +1,54 @@
+#!/bin/bash
+#SBATCH --partition=main
+#SBATCH --time=02:00:00
+#SBATCH --job-name=hyper_tune
+#SBATCH --output=pnp_posterior_sampling/slurm_logs/hyper_tune_%A_%a.out
+#SBATCH --error=pnp_posterior_sampling/slurm_logs/hyper_tune_%A_%a.out
+#SBATCH --array=0-53
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=8G
+#SBATCH --gres=gpu:1
+
+
+# Create output directories if they do not exist
+mkdir -p slurm_logs
+mkdir -p hyper_logs
+
+# Activate conda environment
+source /storage/modules/packages/anaconda/etc/profile.d/conda.sh
+conda activate channel-diffusion
+
+# Navigate to project directory
+cd /home/pardot/channel-diffusion
+
+# Define grid (must match hyper_tune.py order)
+GAMMAS=(0.1 0.5 0.9)
+LAMBDAS=(0.01 0.2 0.5)
+SCHEDULES=(linear cosine alphabar)
+DELTA_T_POWERS=(1 2)
+
+# Compute index for this array job
+IDX=$SLURM_ARRAY_TASK_ID
+COUNT=0
+for gamma in ${GAMMAS[@]}; do
+  for lambda in ${LAMBDAS[@]}; do
+    for schedule in ${SCHEDULES[@]}; do
+      for power in ${DELTA_T_POWERS[@]}; do
+        # Only use power for alphabar, else set to 1
+        if [[ "$schedule" != "alphabar" && $power -ne 1 ]]; then
+          continue
+        fi
+        if [[ $COUNT -eq $IDX ]]; then
+          echo "Running gamma=$gamma lambda=$lambda schedule=$schedule power=$power"
+          python -m pnp_posterior_sampling.pnp_sampling \
+            --gamma=$gamma \
+            --lambda_reg=$lambda \
+            --delta_t_schedule=$schedule \
+            --delta_t_power=$power
+        fi
+        COUNT=$((COUNT+1))
+      done
+    done
+  done
+ done

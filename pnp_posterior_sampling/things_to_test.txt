@@ -1,0 +1,16 @@
+configurations: 
+is_NMSE=true normalizes the noise (?)
+pilot positions and number
+delta_t_schedule: str = "linear" or "cosine"
+"gamma": 0.3 in config_diff and config
+omega_t = delta_t = alphabar_t ^ l and l=1
+
+changed the config.json: 
+"bs": 512,                               # changed from 256 for debugging
+"num_remaining_channels": 1,    # changed to 1 for sampling
+"num_samples": 1,               # changed to 1 for sampling
+"use_grad": false               # changed from true
+
+changes in config_diff_pnp: 
+"num_samples": 1,
+"num_remaining_channels": 1,
