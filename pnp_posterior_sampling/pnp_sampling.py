@@ -261,8 +261,8 @@ class PnPSampler:
 
 
 def main() -> None:
-	parser = argparse.ArgumentParser(description="Run PnP sampling on one batch")
-	parser.add_argument("--config_path", type=str, default="PnP_posterior_sampling/configs")
+	parser = argparse.ArgumentParser(description="Run pnp sampling on one batch")
+	parser.add_argument("--config_path", type=str, default="pnp_posterior_sampling/configs")
 	parser.add_argument("--checkpoint_path", type=str, default="results/model_epoch50.pth")
 	parser.add_argument("--lambda_reg", type=float, default=0.1)
 	parser.add_argument("--num_gen_steps", type=int, default=100)
