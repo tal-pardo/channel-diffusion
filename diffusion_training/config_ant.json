@@ -1,0 +1,24 @@
+{
+    "model": "Linear",
+    "input_len": 32,
+    "seq_len": 32,
+    "flat": 2,
+    "kernel_size": 15,
+    "down_sampling_method": "conv",
+    "down_sampling_layers": 5,
+    "down_sampling_window": 2,
+    "linear_gate": 64,
+    "enc_in": 10,
+    "embed_dim": 64,
+    "length_list": [
+        32,
+        16,
+        8,
+        4,
+        2,
+        1
+    ],
+    "moving_avg": 25,
+    "top_k": 5,
+    "decomp_method": "moving_avg"
+}

@@ -4,6 +4,7 @@ __pycache__/
 # Model checkpoints and experiments
 checkpoints/
 logs/
+*.pth
 
 # SLURM job output
 *.out
