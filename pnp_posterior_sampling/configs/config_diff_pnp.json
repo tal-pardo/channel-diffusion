@@ -18,5 +18,5 @@
     "sample_max_value": 1.0,
     "timestep_spacing": "leading",
     "rescale_betas_zero_snr": false,
-    "gamma": 0.3
+    "gamma": 14.4
 }

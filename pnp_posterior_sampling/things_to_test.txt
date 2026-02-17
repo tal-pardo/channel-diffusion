@@ -14,3 +14,6 @@ changed the config.json:
 changes in config_diff_pnp: 
 "num_samples": 1,
 "num_remaining_channels": 1,
+
+changes in config_noise_pnp:
+is_NMSE=false

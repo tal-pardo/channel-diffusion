@@ -1,4 +1,4 @@
 {
     "noise_power": 1.0,
-    "is_NMSE": true
+    "is_NMSE": false
 }

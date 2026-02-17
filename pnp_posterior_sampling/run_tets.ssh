@@ -1,0 +1,24 @@
+#!/bin/bash
+#SBATCH --partition=mrtx3090
+#SBATCH --time=02:00:00
+#SBATCH --job-name=hyper_tune
+#SBATCH --output=pnp_posterior_sampling/slurm_logs/hyper_tune_%A_%a.out
+#SBATCH --mail-user=pardot@post.bgu.ac.il 
+#SBATCH --mail-type=BEGIN,END,FAIL
+#SBATCH --array=0-53%6
+#SBATCH --tasks=1
+#SBATCH --mem=8G
+#SBATCH --gpus=rtx_3090:1
+
+
+# Create output directories if they do not exist
+mkdir -p pnp_posterior_sampling/slurm_logs
+
+# Activate conda environment
+source /storage/modules/packages/anaconda/etc/profile.d/conda.sh
+conda activate channel-diffusion
+
+# Navigate to project directory
+cd /home/pardot/channel-diffusion
+
+python -m pnp_posterior_sampling.pnp_sampling_v2 \

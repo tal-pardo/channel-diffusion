@@ -1,4 +1,5 @@
-# Util functions and classes. Including signal generation and csv logging
+# Util functions and classes. Including sig
+# l generation and csv logging
 import csv
 from dataclasses import dataclass
 import torch
@@ -62,7 +63,10 @@ class SignalProcessingParams:
             self.Y = self.Y * (self.noise_power * torch.randn_like(self.Y) + 1)
             self.noise_power_real = self.noise_power * self.sigma_H
         else:
-            self.Y = self.Y + self.noise_power * torch.randn_like(self.Y)
+            ### my change ###
+            noise = (torch.randn_like(self.Y) + 1j * torch.randn_like(self.Y)) * (self.noise_power / math.sqrt(2))
+            self.Y = self.Y + noise
+            #self.Y = self.Y + self.noise_power * torch.randn_like(self.Y)
             self.noise_power_real = self.noise_power * torch.ones(1,)
         self.noise_power_real_sqrt = torch.sqrt(self.noise_power_real)
 

@@ -7,7 +7,7 @@
     "max_num_path": 25,
     "gain_offset": 70,
     "gain_gate": -70,
-    "dataset_dir": "/home/pardot/channel-diffusion/dataset",
+    "dataset_dir": "C:\\Users\\talpa\\Projects\\channel-diffusion\\dataset",
     "dataset": "deepmimo",
     "divided_dataset_dir": "divided",
     "dataset_file_name": "32ant_64car_300k",
@@ -49,7 +49,7 @@
     "moving_avg_ant": 25,
     "top_k_ant": 5,
     "decomp_method_ant": "moving_avg",
-    "bs":512,                               
+    "bs":256,                               
     "num_workers": 0,
     "drop_last": false,
     "exp_name": "diffusion_training",
@@ -82,7 +82,7 @@
     "timestep_spacing": "leading",
     "rescale_betas_zero_snr": false,
     "embed_dim": 64,
-    "gamma": 0.3,
+    "gamma": 14.4,
     "eta1": 0.3,
     "eta2": 0.1,
     "eta3": 0.6,
@@ -264,11 +264,8 @@
     "step_ant": 1,
     "pilot_cars": [
         0,
-        10,
-        20,
-        30,
-        40,
-        50,
-        60
+        16,
+        32,
+        48
     ]
 }
