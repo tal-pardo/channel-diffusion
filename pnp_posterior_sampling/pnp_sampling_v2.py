@@ -316,7 +316,7 @@ class PnPSampler:
 
 		step_idx = 0
 		with torch.no_grad():
-			step_iter = tqdm(total=num_gen_steps, desc="PnP steps", leave=False)
+			#step_iter = tqdm(total=num_gen_steps, desc="PnP steps", leave=False)
 			while t > 0:
 				t_next = max(t - step_size, 0)
 				t_batch = torch.full((channel.shape[0],), t, device=channel.device, dtype=torch.int64)
@@ -344,8 +344,8 @@ class PnPSampler:
 
 				t = t_next
 				step_idx += 1
-				step_iter.update(1)
-			step_iter.close()
+				#step_iter.update(1)
+			#step_iter.close()
 
 		H_final_norm = channel               # shape: (bs, 1, num_ant, num_car)
 		H_est = sigma_hat_H * H_final_norm
@@ -495,6 +495,8 @@ def main_test() -> None:
 
     print("\n" + "="*50)
     print(f"FINAL RESULTS (Averaged over {num_batches} batches)")
+    print("lambda_reg: {:.4f}, target_alpha: {:.2f}, xi: {:.2f}, delta_t_schedule: {}, delta_t_power: {}".format(
+        args.lambda_reg, args.target_alpha, args.xi, args.delta_t_schedule, args.delta_t_power))
     print("="*50)
     print(f"NMSE:             {avg_nmse:.6f}")
     print(f"BER:              {avg_ber:.8f}")

@@ -1,11 +1,10 @@
 #!/bin/bash
 #SBATCH --partition=mrtx3090
 #SBATCH --time=02:00:00
-#SBATCH --job-name=hyper_tune
-#SBATCH --output=pnp_posterior_sampling/slurm_logs/hyper_tune_%A_%a.out
+#SBATCH --job-name=test_10_dB
+#SBATCH --output=pnp_posterior_sampling/slurm_logs/test_10_dB_%A.out
 #SBATCH --mail-user=pardot@post.bgu.ac.il 
 #SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH --array=0-53%6
 #SBATCH --tasks=1
 #SBATCH --mem=8G
 #SBATCH --gpus=rtx_3090:1
@@ -22,3 +21,9 @@ conda activate channel-diffusion
 cd /home/pardot/channel-diffusion
 
 python -m pnp_posterior_sampling.pnp_sampling_v2 \
+              --lambda_reg=0.5 \
+              --num_gen_steps=100 \
+              --target_alpha=0.95 \
+              --xi=1.0 \
+              --delta_t_schedule=alphabar \
+              --delta_t_power=1.0

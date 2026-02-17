@@ -5,7 +5,7 @@
 #SBATCH --output=pnp_posterior_sampling/slurm_logs/hyper_tune_%A_%a.out
 #SBATCH --mail-user=pardot@post.bgu.ac.il 
 #SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH --array=0-53%6
+#SBATCH --array=0-1%
 #SBATCH --tasks=1
 #SBATCH --mem=8G
 #SBATCH --gpus=rtx_3090:1
@@ -21,33 +21,38 @@ conda activate channel-diffusion
 # Navigate to project directory
 cd /home/pardot/channel-diffusion
 
-# Define grid (must match hyper_tune.py order)
-GAMMAS=(1 5 10)
-LAMBDAS=(0.01 0.2 0.5)
-SCHEDULES=(alphabar)
-DELTA_T_POWERS=(1 2)
+# Define grid 
+LAMBDAS=(0.5)
+TAR_ALPHA=(0.95)
+XIS=(1.0)
+SCHEDULES=("alphabar")
+DELTA_T_POWERS=(0.5 1.5)
 
 # Compute index for this array job
 IDX=$SLURM_ARRAY_TASK_ID
 COUNT=0
-for gamma in ${GAMMAS[@]}; do
-  for lambda in ${LAMBDAS[@]}; do
-    for schedule in ${SCHEDULES[@]}; do
-      for power in ${DELTA_T_POWERS[@]}; do
-        # Only use power for alphabar, else set to 1
-        if [[ "$schedule" != "alphabar" && $power -ne 1 ]]; then
-          continue
-        fi
-        if [[ $COUNT -eq $IDX ]]; then
-          echo "Running gamma=$gamma lambda=$lambda schedule=$schedule power=$power"
-          python -m pnp_posterior_sampling.pnp_sampling \
-            --gamma=$gamma \
-            --lambda_reg=$lambda \
-            --delta_t_schedule=$schedule \
-            --delta_t_power=$power
-        fi
-        COUNT=$((COUNT+1))
+for lambda in ${LAMBDAS[@]}; do
+  for alpha in ${TAR_ALPHA[@]}; do
+    for xi in ${XIS[@]}; do
+      for schedule in ${SCHEDULES[@]}; do
+        for power in ${DELTA_T_POWERS[@]}; do
+          # Only use power for alphabar, else set to 1
+          if [[ "$schedule" != "alphabar" && $power -ne 1 ]]; then
+            continue
+          fi
+          if [[ $COUNT -eq $IDX ]]; then
+            echo "Running lambda=$lambda, target_alpha=$alpha, xi=$xi, schedule=$schedule power=$power"
+            python -m pnp_posterior_sampling.pnp_sampling_v2 \
+              --lambda_reg=$lambda \
+              --num_gen_steps=100 \
+              --target_alpha=$alpha \
+              --xi=$xi \
+              --delta_t_schedule=$schedule \
+              --delta_t_power=$power
+          fi
+          COUNT=$((COUNT+1))
+        done
       done
     done
   done
- done
+done

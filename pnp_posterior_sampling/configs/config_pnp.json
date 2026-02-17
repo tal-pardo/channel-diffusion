@@ -7,7 +7,7 @@
     "max_num_path": 25,
     "gain_offset": 70,
     "gain_gate": -70,
-    "dataset_dir": "C:\\Users\\talpa\\Projects\\channel-diffusion\\dataset",
+    "dataset_dir": "/home/pardot/channel-diffusion/dataset",
     "dataset": "deepmimo",
     "divided_dataset_dir": "divided",
     "dataset_file_name": "32ant_64car_300k",
