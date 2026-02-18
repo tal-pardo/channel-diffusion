@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import json
 import argparse
 import torch
@@ -85,3 +86,116 @@ def load_dataset(args):
         return load_dataset_deepmimo(args)
     else:
         raise NotImplementedError
+
+# LS estimator for comparison
+class LeastSquaresSampler:
+    """
+    Standard Least Squares (LS) Estimator with Linear Interpolation.
+    Acts as a baseline for comparison.
+    """
+    def __init__(self, config, config_noise, device):
+        self.config = config
+        self.config_noise = config_noise
+        self.device = device
+        self.num_car = config.num_car
+        self.num_ant = config.num_ant 
+        from pnp_posterior_sampling.pnp_sampling_v2 import PnP_SignalGenerator      
+        self.pnp_signal_generator = PnP_SignalGenerator(self.config, self.config_noise, self.device)
+        self.pilot_mask = self.pnp_signal_generator.pilot_mask  		# shape: (num_car,) {0,1}
+        self.data_mask = 1.0 - self.pilot_mask							# shape: (num_car,) {0,1}
+        self.pilots = (1.0+0.0j) * self.pilot_mask		            	# shape: (num_car,) {complex tensor with 1 in pilot positions and 0 in data positions}	
+        self.num_pilot = len(self.config.pilot_cars)
+        self.sigma_n = self.config_noise.noise_power
+        self.pilot_indices = self.config.pilot_cars
+
+        # Create interpolation grid (0 to 63)
+        self.grid_indices = torch.arange(self.num_car, device=device).float()
+
+    def estimate(self, Y):
+        H_est = torch.zeros_like(Y, dtype=torch.complex64)
+        
+        # LS at Pilot positions
+        pilot_idx_tensor = torch.tensor(self.pilot_indices, device=self.device)
+        H_ls_pilots = Y[:, :, pilot_idx_tensor] / (1.0 + 0.0j) 
+        
+        # Place them in the final matrix
+        H_est[:, :, pilot_idx_tensor] = H_ls_pilots
+        
+        # Linear Interpolation between pilots
+        for i in range(len(self.pilot_indices) - 1):
+            start_idx = self.pilot_indices[i]
+            end_idx = self.pilot_indices[i+1]
+            
+            # Use i and i+1 to get the small extracted pilot values
+            val_start = H_ls_pilots[:, :, i].unsqueeze(-1)
+            val_end = H_ls_pilots[:, :, i+1].unsqueeze(-1)
+            
+            dist = end_idx - start_idx
+            steps = torch.arange(1, dist, device=self.device).view(1, 1, -1) / float(dist)
+            
+            interp_vals = (1 - steps) * val_start + steps * val_end
+            H_est[:, :, start_idx+1:end_idx] = interp_vals
+
+        # 3. Extrapolation for edges
+        if self.pilot_indices[0] > 0:
+            H_est[:, :, :self.pilot_indices[0]] = H_ls_pilots[:, :, 0].unsqueeze(-1)
+        if self.pilot_indices[-1] < self.num_car - 1:
+            H_est[:, :, self.pilot_indices[-1]+1:] = H_ls_pilots[:, :, -1].unsqueeze(-1)
+            
+        return H_est
+
+# --- Plotting utility for PnP and LS results ---
+def my_plots():
+    """
+    Plots NMSE, BER, and Phase Shift for PnP sampling and Least Squares results.
+    Uses the results from the attached table (hardcoded for now).
+    """
+    # SNR values (dB)
+    snr_db = [-3.5, 0, 3.5, 5, 10]
+    # PnP results
+    pnp_nmse = [0.705, 0.705, 0.397, 0.252, 0.217]
+    pnp_ber = [0.0514, 0.0512, 0.0466, 0.0447, 0.0458]
+    pnp_ps = [3.09, 3.19, 3.13, 3.23, 3.19]
+    # LS results
+    ls_nmse = [2.295, 1.767, 1.530, 1.475, 1.382]
+    ls_ber = [0.416, 0.417, 0.417, 0.416, 0.415]
+    ls_ps = [-43.64, -46.28, -47.90, -47.98, -48.77]
+
+    # NMSE plot
+    plt.figure(figsize=(6,4))
+    plt.plot(snr_db, pnp_nmse, marker='o', label='PnP sampling')
+    plt.plot(snr_db, ls_nmse, marker='s', label='Least Squares')
+    plt.xlabel('SNR [dB]')
+    plt.ylabel('NMSE')
+    plt.title('NMSE vs SNR')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+    # BER plot
+    plt.figure(figsize=(6,4))
+    plt.plot(snr_db, pnp_ber, marker='o', label='PnP sampling')
+    plt.plot(snr_db, ls_ber, marker='s', label='Least Squares')
+    plt.xlabel('SNR [dB]')
+    plt.ylabel('BER')
+    plt.title('BER vs SNR')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+    # Phase Shift plot
+    plt.figure(figsize=(6,4))
+    plt.plot(snr_db, pnp_ps, marker='o', label='PnP sampling')
+    plt.plot(snr_db, ls_ps, marker='s', label='Least Squares')
+    plt.xlabel('SNR [dB]')
+    plt.ylabel('Phase Shift [deg]')
+    plt.title('Phase Shift vs SNR')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+if __name__ == "__main__":
+    my_plots()

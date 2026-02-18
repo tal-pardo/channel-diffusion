@@ -3,13 +3,14 @@ from email import parser
 import math
 from dataclasses import dataclass
 from typing import Optional, Tuple
+import numpy as np
 
 import torch
 from tqdm import tqdm
 
-from MixerLayer import Model				    # same
-from myDiffuser import MyDDIMScheduler			# same
-from pnp_posterior_sampling.pnp_utils import get_config_pnp , load_dataset		# up
+from MixerLayer import Model				    
+from myDiffuser import MyDDIMScheduler			
+from pnp_posterior_sampling.pnp_utils import get_config_pnp , load_dataset		
 
 
 @dataclass
@@ -504,6 +505,102 @@ def main_test() -> None:
     print(f"Phase Error (Y):  {avg_phase_y:.4f} degrees")
     print("="*50)
 
-if __name__ == "__main__":
-    main_test()
+def main_LS_test():
+	from pnp_posterior_sampling.pnp_utils import LeastSquaresSampler
+	
+	parser = argparse.ArgumentParser(description="Run LS baseline on the whole test set")
+	parser.add_argument("--config_path", type=str, default="pnp_posterior_sampling/configs")
+	parser.add_argument("--checkpoint_path", type=str, default="results/model_epoch50.pth")
+	args = parser.parse_args()
 
+    # Load config and dataset
+	config_main = f"{args.config_path}/config_pnp.json"
+	config_car = f"{args.config_path}/config_car_pnp.json"
+	config_ant = f"{args.config_path}/config_ant_pnp.json"
+	config_diff = f"{args.config_path}/config_diff_pnp.json"
+	config_noise = f"{args.config_path}/config_noise_pnp.json"
+	config, config_car, config_ant, config_diff, config_noise = get_config_pnp(
+        config_main, config_car, config_ant, config_diff, config_noise
+    )
+	device = "cuda" if torch.cuda.is_available() else "cpu"
+	ls_sampler = LeastSquaresSampler(config, config_noise, device)
+	
+	datasets = load_dataset(config)
+	if len(datasets) < 2:
+		raise ValueError("Dataset must provide a test split")
+	
+	data_loader = torch.utils.data.DataLoader(
+        datasets[1],
+        batch_size=config.bs,
+        shuffle=False,
+        num_workers=config.num_workers,
+        drop_last=False,
+    )
+
+    # --- Initialize Accumulators ---
+	total_nmse = 0.0
+	total_ber = 0.0
+	total_phase_h = 0.0
+	total_phase_y = 0.0
+	num_batches = 0
+	
+	for batch in tqdm(data_loader, desc="LS Test Batches"):
+		if config.dataset == "deepmimo":
+			clean_channel = batch[0].to(device)
+		else:
+			raise ValueError("Unsupported dataset")
+
+        # Simulate received signal and get pilots
+		pnp_signal_generator = ls_sampler.pnp_signal_generator
+		pnp_sp_params = pnp_signal_generator.simulate_received(clean_channel)
+		Y = pnp_sp_params.Y
+		x_true = pnp_sp_params.x
+
+        # LS estimate
+		H_ls = ls_sampler.estimate(Y)
+		
+		num_batches += 1
+
+		# NMSE
+		nmse = pnp_signal_generator.compute_NMSE(H_ls, clean_channel)
+		total_nmse += nmse.item() if isinstance(nmse, torch.Tensor) else nmse
+
+		# BER (use your decoder and BER function)
+		ber = pnp_signal_generator.compute_BER_2(x_true, Y, H_ls)
+		total_ber += ber
+
+
+		# Initialize Sampler for evaluation functions
+		pnp_sampler = PnPSampler(config_path=args.config_path,
+			checkpoint_path=args.checkpoint_path,)
+
+		# Phase error H
+		phase_error_H = pnp_sampler.compute_phase_error(H_ls, clean_channel)
+		total_phase_h += phase_error_H
+		
+		# Phase error Y
+		Y_est = H_ls * x_true.unsqueeze(1)	
+		phase_error_Y = pnp_sampler.compute_phase_error(Y_est, Y)
+		total_phase_y += phase_error_Y
+
+    # --- Compute and Print Final Averages ---
+	avg_nmse = total_nmse / num_batches
+	avg_ber = total_ber / num_batches
+	avg_phase_h = total_phase_h / num_batches
+	avg_phase_y = total_phase_y / num_batches
+
+	noise_dB = 10 * math.log10(1/(config_noise.noise_power ** 2))
+
+	print("\n" + "="*50)
+	print(f"FINAL RESULTS LS estimation (Averaged over {num_batches} batches)")
+	print("="*50)
+	print(f"Noise Power (dB): {noise_dB:.2f}")
+	print(f"NMSE:             {avg_nmse:.6f}")
+	print(f"BER:              {avg_ber:.8f}")
+	print(f"Phase Error (H):  {avg_phase_h:.4f} degrees")
+	print(f"Phase Error (Y):  {avg_phase_y:.4f} degrees")
+	print("="*50)
+
+
+if __name__ == "__main__":
+    main_LS_test()
